@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Travian_MarketSendHelper
-// @version      0.1
+// @version      0.1.1
 // @description  try to take over the world!
 // @author       Lola
 // @match        https://ts5.lusobrasileiro.travian.com/build.php?*t=5*id=30*
@@ -164,7 +164,7 @@ function main(){
                 $("#NeedClay").val(clayNeed);
                 $("#NeedIron").val(ironNeed);
                 $("#NeedCrop").val(cropNeed);
-                
+
                 setCookie(village+"_perc_arm", spa, 30)
                 setCookie(village+"_perc_cel", spc, 30)
             });
