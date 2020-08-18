@@ -20,13 +20,13 @@ function addJQuery(callback) {
 }
 function main(){
     $(document).ready(function(){
-        // function setCookie(cname,cvalue,exdays=365) {
-        //     var d = new Date();
-        //     d.setTime(d.getTime() + (exdays*24*60*60*1000));
-        //     var expires = "expires=" + d.toGMTString();
-        //     document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-        // }
         if($("h1.titleInHeader").html().substring(0,7)=="Mercado"){
+            function setCookie(cname,cvalue,exdays=365) {
+                var d = new Date();
+                d.setTime(d.getTime() + (exdays*24*60*60*1000));
+                var expires = "expires=" + d.toGMTString();
+                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+            }
             function getCookie(cname) {
                 var name = cname + "=";
                 var decodedCookie = decodeURIComponent(document.cookie);
@@ -147,19 +147,26 @@ function main(){
                 var village =$(this).parent().data("village");
                 var capArm = parseInt(getCookie(village+"_cap1"));
                 var capCel = parseInt(getCookie(village+"_cap2"));
-
-                var pa = parseInt(prompt("Perc. Armazem","80"))/100;
-                var pc = parseInt(prompt("Perc. Celeiro","80"))/100;
-
+                
+                var spa = getCookie(village+"_perc_arm");
+                var spc = getCookie(village+"_perc_cel");
+                spa = prompt("Perc. Armazem",spa);
+                spc = prompt("Perc. Celeiro",spc);
+                pa = parseInt(spa)/100;
+                pc = parseInt(spc)/100;
+                
                 var lumberNeed = (capArm * pa);
                 var clayNeed =  (capArm * pa);
                 var ironNeed = (capArm * pa);
                 var cropNeed = (capCel * pc);
-
+                
                 $("#NeedLumber").val(lumberNeed);
                 $("#NeedClay").val(clayNeed);
                 $("#NeedIron").val(ironNeed);
                 $("#NeedCrop").val(cropNeed);
+                
+                setCookie(village+"_perc_arm", spa, 30)
+                setCookie(village+"_perc_cel", spc, 30)
             });
             //
             function kkk(){
