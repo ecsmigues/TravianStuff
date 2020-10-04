@@ -3,7 +3,6 @@
 // @version      0.1.1
 // @description  try to take over the world!
 // @author       Lola
-// @match        https://ts5.lusobrasileiro.travian.com/build.php?*t=5*id=30*
 // @match        https://ts5.lusobrasileiro.travian.com/build.php?*
 // @grant        none
 // ==/UserScript==
@@ -20,28 +19,15 @@ function addJQuery(callback) {
 }
 function main(){
     $(document).ready(function(){
-        if($("h1.titleInHeader").html().substring(0,7)=="Mercado"){
-            function setCookie(cname,cvalue,exdays=365) {
-                var d = new Date();
-                d.setTime(d.getTime() + (exdays*24*60*60*1000));
-                var expires = "expires=" + d.toGMTString();
-                document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+        if($("#build.gid17").length == 1 && $("div.favorKey5 > a.active").length == 1){
+
+            storage = {};
+            if(localStorage.getItem('Storage') == null) {
+                storage = {};
+            }else{
+                storage = JSON.parse(localStorage.getItem('Storage'));
             }
-            function getCookie(cname) {
-                var name = cname + "=";
-                var decodedCookie = decodeURIComponent(document.cookie);
-                var ca = decodedCookie.split(';');
-                for(var i = 0; i < ca.length; i++) {
-                var c = ca[i];
-                while (c.charAt(0) == ' ') {
-                    c = c.substring(1);
-                }
-                if (c.indexOf(name) == 0) {
-                    return c.substring(name.length, c.length);
-                }
-                }
-                return "";
-            }
+
 
             //$("#marketSend").after( "<table id=\"cap-data\" style=\"width:100%\"><tr><th>Ald</th><th>Armazem</th><th>Madeira</th><th>Barro</th><th>Ferro</th><th>Celeiro</th><th>Cereal</th></tr></table>" )
             $("#marketSend").after( "<table id=\"cap-data\" style=\"width:100%;white-space: nowrap;\"><tr id=\"cap-data-header\"></tr></table>" );
@@ -56,23 +42,37 @@ function main(){
             var trModel = "<tr data-village=\"@village@\"><td class=\"tovillage\" data-village=\"@village@\">@village@</td><td class=\"armcap\" >@cap1@</td><td>@lumber@</td><td>@clay@</td><td>@iron@</td><td>@cap2@</td><td>@crop@</td></tr>";
             $("#sidebarBoxVillagelist").find("span.name").each(function(){
                 var village = $(this).html().replace(" ","-");
-                //var village = $("input.villageInput").val().replace(" ","-");
-                var cap1 = parseInt(getCookie(village+"_cap1"));
-                var cap2 = parseInt(getCookie(village+"_cap2"));
-                var lumber = parseInt(getCookie(village+"_lumber"));
-                var clay = parseInt(getCookie(village+"_clay"));
-                var iron = parseInt(getCookie(village+"_iron"));
-                var crop = parseInt(getCookie(village+"_crop"));
-                $("#cap-data").append(trModel
-                    .replace(/@village@/g,village)
-                    .replace("@cap1@",cap1.toString())
-                    .replace("@lumber@",lumber.toString() + " (" + ((lumber/cap1)*100).toFixed(0) + "%)")
-                    .replace("@clay@",clay.toString() + " (" + ((clay/cap1)*100).toFixed(0) + "%)")
-                    .replace("@iron@",iron.toString() + " (" + ((iron/cap1)*100).toFixed(0) + "%)")
-                    .replace("@cap2@",cap2.toString())
-                    .replace("@crop@",crop.toString() + " (" + ((crop/cap2)*100).toFixed(0) + "%)")
-                    .replace(/NaN/g,"")
-                );
+                if (typeof storage[village] == "undefined") {
+                    storage[village] = {};
+                }else{
+                    var updtAge = Date.now() - storage[village]["updated_at"];
+                    var updtAge = updtAge/(1000 * 60); // age in minutes
+                    if (updtAge > 7){
+                        storage[village]["lumber"] = 0;
+                        storage[village]["clay"] = 0;
+                        storage[village]["iron"] = 0;
+                        storage[village]["crop"] = 0;
+                        localStorage.setItem('Storage', JSON.stringify(storage))
+                    }
+
+                    var cap1 = storage[village].warehouse;
+                    var cap2 = storage[village].granary;
+                    var lumber = storage[village].lumber;
+                    var clay = storage[village].clay;
+                    var iron = storage[village].iron;
+                    var crop = storage[village].crop;
+                    
+                    $("#cap-data").append(trModel
+                        .replace(/@village@/g,village)
+                        .replace("@cap1@",cap1.toString())
+                        .replace("@lumber@",lumber.toString() + " (" + ((lumber/cap1)*100).toFixed(0) + "%)")
+                        .replace("@clay@",clay.toString() + " (" + ((clay/cap1)*100).toFixed(0) + "%)")
+                        .replace("@iron@",iron.toString() + " (" + ((iron/cap1)*100).toFixed(0) + "%)")
+                        .replace("@cap2@",cap2.toString())
+                        .replace("@crop@",crop.toString() + " (" + ((crop/cap2)*100).toFixed(0) + "%)")
+                        .replace(/NaN/g,"")
+                    );
+                }
             })
             $('#cap-data').find('td').css('padding', '0');
 
@@ -93,16 +93,20 @@ function main(){
 
 
             $(".tovillage").click(function(){
+                window.onbeforeunload = function() {
+                    return "";
+                }
+
                 $('.tovillage').css('background-color', '');
                 $(this).css('background-color', 'gray');
                 var village = $(this).data("village");
-                var capArm = parseInt(getCookie(village+"_cap1"));
-                var capCel = parseInt(getCookie(village+"_cap2"));
+                var capArm = storage[village].warehaouse;
+                var capCel = storage[village].granary;
 
-                var lumberIn = parseInt(getCookie(village+"_lumber"));
-                var clayIn = parseInt(getCookie(village+"_clay"));
-                var ironIn = parseInt(getCookie(village+"_iron"));
-                var cropIn = parseInt(getCookie(village+"_crop"));
+                var lumberIn = storage[village].lumber;
+                var clayIn = storage[village].clay;
+                var ironIn = storage[village].iron;
+                var cropIn = storage[village].crop;
 
                 var lumberNeed = parseInt($("#NeedLumber").val());
                 var clayNeed =  parseInt($("#NeedClay").val());
@@ -118,9 +122,15 @@ function main(){
                     allok = false;
                     alert("Celeiro nao comporta!")
                 }
+                if(lumberIn==0 && clayIn==0 && ironIn==0 && cropIn==0){
+                    allok = false;
+                    alert("Atualizar dados da aldeia destino.")
+                }
 
                 if(allok){
                     var trips = $("#x2").val();
+
+                    $("#enterVillageName").val(village.replace("-"," "));
 
                     if (thisvillage != village){
                         var lumber =  lumberNeed > lumberIn ? (lumberNeed - lumberIn)/trips : 0;
@@ -132,10 +142,9 @@ function main(){
                         var clay = clayNeed < clayIn ? (clayIn - clayNeed)/trips : 0;
                         var iron = ironNeed < ironIn ? (ironIn - ironNeed)/trips : 0;
                         var crop = cropNeed < cropIn ? (cropIn - cropNeed)/trips : 0;
-
+                        $("#enterVillageName").val("Amber 02");
                     }
 
-                    $("#enterVillageName").val(village.replace("-"," "));
                     $("#r1").val(lumber.toFixed(0));
                     $("#r2").val(clay.toFixed(0));
                     $("#r3").val(iron.toFixed(0));
@@ -144,14 +153,17 @@ function main(){
             });
 
             $(".armcap").click(function(){
+                $(".armcap").css('background-color', '');
+                $(this).css('background-color', 'gray');
+
                 var village =$(this).parent().data("village");
-                var capArm = parseInt(getCookie(village+"_cap1"));
-                var capCel = parseInt(getCookie(village+"_cap2"));
+                var capArm = storage[village].warehouse;
+                var capCel = storage[village].granary;
                 
-                var spa = getCookie(village+"_perc_arm");
-                var spc = getCookie(village+"_perc_cel");
-                spa = prompt("Perc. Armazem",spa);
-                spc = prompt("Perc. Celeiro",spc);
+                var spa = storage[village].perc_warehouse;
+                var spc = storage[village].perc_granary;
+                spa = parseInt(prompt("Perc. Armazem",spa));
+                spc = parseInt(prompt("Perc. Celeiro",spc));
                 pa = parseInt(spa)/100;
                 pc = parseInt(spc)/100;
                 
@@ -165,8 +177,9 @@ function main(){
                 $("#NeedIron").val(ironNeed);
                 $("#NeedCrop").val(cropNeed);
 
-                setCookie(village+"_perc_arm", spa, 30)
-                setCookie(village+"_perc_cel", spc, 30)
+                storage[village].perc_warehouse = spa;
+                storage[village].perc_granary = spc;
+                localStorage.setItem('Storage', JSON.stringify(storage))
             });
             //
             function kkk(){

@@ -26,7 +26,7 @@ function main(){
             var nature = {
                 Rato : {defInf: 25, defCav: 20, come: 1},
                 Aranha : {defInf: 35, defCav:40, come:1},
-                Cobra : {defInf: 40, defCav:60, come:1},
+                Serpente : {defInf: 40, defCav:60, come:1},
                 Morcego : {defInf: 65, defCav:50, come:1},
                 Javali : {defInf:70, defCav:33, come:2},
                 Lobo : {defInf:80, defCav:70, come:2},
