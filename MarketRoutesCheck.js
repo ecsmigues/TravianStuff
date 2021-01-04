@@ -24,6 +24,7 @@ function main(){
             $(".tradeRouteActions").append("<div id=\"MoreActions2\"></div>");
             $("#MoreActions1").append("<button type=\"button\" class=\"textButtonV1 green\" style=\"background-color: blue\" id=\"CheckItens\">Check</button>");
             $("#MoreActions1").append("<button type=\"button\" class=\"textButtonV1 green\" style=\"background-color: blue\" id=\"UncheckItens\">Uncheck</button>");
+            $("#MoreActions2").append("<button type=\"button\" class=\"textButtonV1 green\" style=\"background-color: blue\" id=\"clearfilter\">clear filter</button>");
             $("#MoreActions2").append("<button type=\"button\" class=\"textButtonV1 green\" style=\"background-color: blue\" id=\"DeleteItens\">Delete innactive</button>");
     
             $("#CheckItens").click(function(){
@@ -37,6 +38,10 @@ function main(){
                 var itens = $('#trading_routes > tbody > tr > td > input').length;
                 // alert("itens: " + itens);
                 DeleteInnactiveRoutes(0,itens)
+            });
+            $("#clearfilter").click(function(){
+                $('#trading_routes > tbody > tr').each(function(){
+                        $(this).removeAttr("hidden");
             });
     
             function CheckBtnClick(val){
@@ -88,7 +93,7 @@ function main(){
                 var name = $(this).find("a").html();
                 $('#trading_routes > tbody > tr > td.desc > a').each(function(){
                     if ($(this).html() != name){
-                        $(this).closest("tr").remove();
+                        $(this).closest("tr").attr("hidden");
                     }
                 });
     

@@ -3,7 +3,7 @@
 // @version      0.1.1
 // @description  try to take over the world!
 // @author       Lola
-// @match        https://ts5.lusobrasileiro.travian.com/build.php?*
+// @match        https://*.travian.com/build.php?*
 // @grant        none
 // ==/UserScript==
 
@@ -31,8 +31,8 @@ function main(){
 
             //$("#marketSend").after( "<table id=\"cap-data\" style=\"width:100%\"><tr><th>Ald</th><th>Armazem</th><th>Madeira</th><th>Barro</th><th>Ferro</th><th>Celeiro</th><th>Cereal</th></tr></table>" )
             $("#marketSend").after( "<table id=\"cap-data\" style=\"width:100%;white-space: nowrap;\"><tr id=\"cap-data-header\"></tr></table>" );
-            $("#cap-data-header").append("<th>Aldeia<br><input type=\"text\" id=\"Need\" value=\"\" size=\"2\"></input></th>");
-            $("#cap-data-header").append("<th>Arm.</th>");
+            $("#cap-data-header").append("<th id=\"aldhead\">Aldeia<br><input type=\"text\" id=\"Need\" value=\"\" size=\"2\"></input></th>");
+            $("#cap-data-header").append("<th id=\"armhead\">Arm.</th>");
             $("#cap-data-header").append("<th>Madeira<br><input type=\"text\" id=\"NeedLumber\" value=\"0\" size=\"4\"></input></th>");
             $("#cap-data-header").append("<th>Barro<br><input type=\"text\" id=\"NeedClay\" value=\"0\" size=\"4\"></input></th");
             $("#cap-data-header").append("<th>Ferro<br><input type=\"text\" id=\"NeedIron\" value=\"0\" size=\"4\"></input></th");
@@ -75,6 +75,7 @@ function main(){
                 }
             })
             $('#cap-data').find('td').css('padding', '0');
+            //highlight current
 
             var thisvillage = $("input.villageInput").val();
             if (thisvillage == null){
@@ -82,6 +83,7 @@ function main(){
             }
             thisvillage = thisvillage.replace(" ","-");
 
+            baseSetUp();
 
             $("#Need").change(function(){
                 var StuffNedded = $("#Need").val().split(" ");
@@ -91,14 +93,21 @@ function main(){
                 $("#NeedCrop").val(StuffNedded[3]);
             });
 
-
-            $(".tovillage").click(function(){
+            $("#armhead").click(function(){
                 window.onbeforeunload = function() {
                     return "";
                 }
+                $("#armhead").css('background-color', 'DodgerBlue');
+
+            });
+
+            $(".tovillage").click(function(){
+                // window.onbeforeunload = function() {
+                //     return "";
+                // }
 
                 $('.tovillage').css('background-color', '');
-                $(this).css('background-color', 'gray');
+                // $(this).css('background-color', 'gray');
                 var village = $(this).data("village");
                 var capArm = storage[village].warehaouse;
                 var capCel = storage[village].granary;
@@ -122,34 +131,44 @@ function main(){
                     allok = false;
                     alert("Celeiro nao comporta!")
                 }
-                if(lumberIn==0 && clayIn==0 && ironIn==0 && cropIn==0){
-                    allok = false;
-                    alert("Atualizar dados da aldeia destino.")
-                }
-
-                if(allok){
-                    var trips = $("#x2").val();
-
+                
+                if (thisvillage != village){
                     $("#enterVillageName").val(village.replace("-"," "));
-
+                }
+                
+                if(lumberIn==0 && clayIn==0 && ironIn==0 && cropIn==0){
+                    // allok = false;
+                    // alert("Atualizar dados da aldeia destino.")
+                    $(this).css('background-color', 'gray');
+                    var lumber = 0;
+                    var clay = 0;
+                    var iron = 0;
+                    var crop = 0;
+                }
+                // if(allok){
+                else
+                {
+                    var trips = $("#x2").val();
+                    
                     if (thisvillage != village){
                         var lumber =  lumberNeed > lumberIn ? (lumberNeed - lumberIn)/trips : 0;
                         var clay = clayNeed > clayIn ? (clayNeed - clayIn)/trips : 0;
                         var iron = ironNeed > ironIn ? (ironNeed - ironIn)/trips : 0;
                         var crop = cropNeed > cropIn ? (cropNeed - cropIn)/trips : 0;
+                        $(this).css('background-color', 'DodgerBlue');
                     }else{
                         var lumber =  lumberNeed < lumberIn ? (lumberIn - lumberNeed)/trips : 0;
                         var clay = clayNeed < clayIn ? (clayIn - clayNeed)/trips : 0;
                         var iron = ironNeed < ironIn ? (ironIn - ironNeed)/trips : 0;
                         var crop = cropNeed < cropIn ? (cropIn - cropNeed)/trips : 0;
-                        $("#enterVillageName").val("Amber 02");
+                        $(this).css('background-color', 'red');
                     }
-
-                    $("#r1").val(lumber.toFixed(0));
-                    $("#r2").val(clay.toFixed(0));
-                    $("#r3").val(iron.toFixed(0));
-                    $("#r4").val(crop.toFixed(0));
                 }
+
+                $("#r1").val(lumber.toFixed(0));
+                $("#r2").val(clay.toFixed(0));
+                $("#r3").val(iron.toFixed(0));
+                $("#r4").val(crop.toFixed(0));
             });
 
             $(".armcap").click(function(){
@@ -188,6 +207,37 @@ function main(){
                 $("#r3").val($("#NeedIron").val());
                 $("#r4").val($("#NeedCrop").val());
             }
+
+            
+            function baseSetUp(){
+                // $(".armcap").css('background-color', '');
+                // $(this).css('background-color', 'gray');
+
+                // var village =$(this).parent().data("village");
+                var capArm = storage[thisvillage].warehouse;
+                var capCel = storage[thisvillage].granary;
+                
+                // var spa = storage[village].perc_warehouse;
+                // var spc = storage[village].perc_granary;
+                // spa = parseInt(prompt("Perc. Armazem",spa));
+                // spc = parseInt(prompt("Perc. Celeiro",spc));
+                pa = 0.5;
+                pc = 0.5;
+                
+                var lumberNeed = (capArm * pa);
+                var clayNeed =  (capArm * pa);
+                var ironNeed = (capArm * pa);
+                var cropNeed = (capCel * pc);
+                
+                $("#NeedLumber").val(lumberNeed);
+                $("#NeedClay").val(clayNeed);
+                $("#NeedIron").val(ironNeed);
+                $("#NeedCrop").val(cropNeed);
+
+                // storage[village].perc_warehouse = spa;
+                // storage[village].perc_granary = spc;
+                // localStorage.setItem('Storage', JSON.stringify(storage))
+            };
         }
     });
 }

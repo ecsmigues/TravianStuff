@@ -101,14 +101,14 @@ function main(){
                         prm[myVil] = {};
                     }
                     for(var toVil in prm[myVil]) {
-                        if(prm[myVil][toVil]>=50 || prm[myVil][toVil]==null){
+                        // if(prm[myVil][toVil]>=50 || prm[myVil][toVil]==null){
                             tableBody += "<tr class='hover'>";
                             tableBody += ("<td>" + myVil + "</td>");
                             // console.log(toVil);
                             tableBody += ("<td>" + toVil + "</td>");
                             tableBody += ("<td>" + prm[myVil][toVil] + "</td>");
                             tableBody += "</tr>";
-                        }
+                        // }
                     }
                 })
                 $("#content > table > tbody").append(tableBody);
